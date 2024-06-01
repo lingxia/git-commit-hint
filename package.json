@@ -1,0 +1,44 @@
+{
+  "name": "git-commit-hint",
+  "displayName": "Git Commit Hint",
+  "version": "1.0.0",
+  "description": "Git Commit Hint",
+  "main": "./out/extension.js",
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "package": "npx vsce package",
+    "watch": "tsc -watch -p ./"
+  },
+  "devDependencies": {
+    "@types/mocha": "^8.2.0",
+    "@types/node": "^14.14.31",
+    "mocha": "^8.3.2",
+    "@types/vscode": "^1.81.0",
+    "typescript": "^4.2.3"
+  },
+  "engines": {
+    "vscode": "^1.83.0"
+  },
+  "activationEvents": [
+    "onLanguage:scminput"
+  ],
+  "repository": {
+    "url": "https://github.com/joyceerhl/vscode-git-fit-commit"
+  },
+  "contributes": {
+    "configuration": {
+      "title": "GitCommitHint",
+      "properties": {
+        "gitCommitHint.enabled": {
+          "type": "boolean",
+          "default": false,
+          "markdownDescription": "%gitCommitHint.enabled%"
+        }
+      }
+    }
+  },
+  "author": "Jeremy Zhao",
+  "publisher": "Jeremy Zhao",
+  "license": "MIT"
+}
