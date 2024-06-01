@@ -9,7 +9,7 @@ import {
 const SplitStr = "#comment ";
 let extensionContext: vscode.ExtensionContext | undefined;
 
-export class SummaryLineTypeCompletionItemProvider
+export class HintProvider
   implements
     vscode.CompletionItemProvider,
     vscode.CodeActionProvider,
@@ -66,47 +66,45 @@ export class SummaryLineTypeCompletionItemProvider
   ): vscode.ProviderResult<
     vscode.CompletionItem[] | vscode.CompletionList<vscode.CompletionItem>
   > {
-    // If we are at the start of the commit message, provide all configured item types
-    // const existingPrefix = this._isValidSubjectLine(document);
-    if (!existingPrefix && position.line === 0) {
+    if (position.line === 0) {
       const allowedPrefixes = this._getAllowedPrefixes();
       const completions = allowedPrefixes.map((prefix) => {
         const completionItem = new vscode.CompletionItem(
-          `${prefix}:`,
+          `${SplitStr}`,
           vscode.CompletionItemKind.Text
         );
         const startPosition = new vscode.Position(0, 0);
         completionItem.sortText = prefix;
         completionItem.insertText = "";
-        if (typeof existingPrefix === "string" && existingPrefix.length > 0) {
-          // If there's an existing invalid prefix, replace it
-          const endPosition = new vscode.Position(0, existingPrefix.length);
-          completionItem.additionalTextEdits = [
-            vscode.TextEdit.replace(
-              new vscode.Range(startPosition, endPosition),
-              prefix
-            ),
-          ];
-        } else {
-          const lineText = document.lineAt(0);
-          // Don't use label as filter text so that completions aren't filtered out when the cursor is at the end of the word and we want to insert some other text prior
-          completionItem.filterText = `${lineText.text} ${prefix}`;
-          // If the cursor is at a word boundary, accepting the completion will also replace the word at the cursor.
-          // Make the insertText the word itself so that the word at the cursor is preserved.
-          const whitespaceWordRange = document.getWordRangeAtPosition(
-            position,
-            /\s+/
+        // if (typeof existingPrefix === "string" && existingPrefix.length > 0) {
+        //   // If there's an existing invalid prefix, replace it
+        //   const endPosition = new vscode.Position(0, existingPrefix.length);
+        //   completionItem.additionalTextEdits = [
+        //     vscode.TextEdit.replace(
+        //       new vscode.Range(startPosition, endPosition),
+        //       prefix
+        //     ),
+        //   ];
+        // } else {
+        const lineText = document.lineAt(0);
+        // Don't use label as filter text so that completions aren't filtered out when the cursor is at the end of the word and we want to insert some other text prior
+        completionItem.filterText = `${lineText.text} ${prefix}`;
+        // If the cursor is at a word boundary, accepting the completion will also replace the word at the cursor.
+        // Make the insertText the word itself so that the word at the cursor is preserved.
+        const whitespaceWordRange = document.getWordRangeAtPosition(
+          position,
+          /\s+/
+        );
+        if (!whitespaceWordRange || whitespaceWordRange.isEmpty) {
+          // There is no whitespace before the cursor
+          completionItem.insertText = document.getText(
+            document.getWordRangeAtPosition(position)
           );
-          if (!whitespaceWordRange || whitespaceWordRange.isEmpty) {
-            // There is no whitespace before the cursor
-            completionItem.insertText = document.getText(
-              document.getWordRangeAtPosition(position)
-            );
-          }
-          completionItem.additionalTextEdits = [
-            vscode.TextEdit.insert(lineText.range.start, `${prefix}: `),
-          ];
         }
+        completionItem.additionalTextEdits = [
+          vscode.TextEdit.insert(lineText.range.start, `${prefix}: `),
+        ];
+        // }
         return completionItem;
       });
       return completions;
@@ -141,21 +139,26 @@ export class SummaryLineTypeCompletionItemProvider
       return;
     }
 
-    if (!this._isValidSubjectLine(document)) {
-      const allowedPrefixes = this._getAllowedPrefixes();
-      const range = document.lineAt(0).range;
-      const diagnostic = new vscode.Diagnostic(
-        range,
-        vscode.l10n.t(
-          `Subject line should start with one of the following types:\n{0}`,
-          allowedPrefixes.map((prefix) => `${prefix}:`).join(", ")
-        ),
-        vscode.DiagnosticSeverity.Warning
-      );
-      this.diagnosticCollection.set(document.uri, [diagnostic]);
-    } else {
-      this.diagnosticCollection.clear();
-    }
+    const text = document.lineAt(0).text.toLocaleLowerCase();
+    console.log(text);
+
+    // this._saveNewCommitToFile(`${text}`);
+
+    // if (!this._isValidSubjectLine(document)) {
+    // const allowedPrefixes = this._getAllowedPrefixes();
+    // const range = document.lineAt(0).range;
+    // const diagnostic = new vscode.Diagnostic(
+    //   range,
+    //   vscode.l10n.t(
+    //     `Subject line should start with one of the following types:\n{0}`,
+    //     allowedPrefixes.map((prefix) => `${prefix}:`).join(", ")
+    //   ),
+    //   vscode.DiagnosticSeverity.Warning
+    // );
+    // this.diagnosticCollection.set(document.uri, [diagnostic]);
+    // } else {
+    //   this.diagnosticCollection.clear();
+    // }
   }
 
   // private _isValidSubjectLine(document: vscode.TextDocument): boolean | string {

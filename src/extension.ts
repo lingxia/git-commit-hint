@@ -1,23 +1,13 @@
 import * as vscode from "vscode";
-import {
-  SummaryLineTypeCompletionItemProvider,
-  activateExtensionContext,
-} from "./subjectLineCompletionItemProvider";
+import { HintProvider, activateExtensionContext } from "./hintProvider";
 
 export function activate(context: vscode.ExtensionContext) {
-  const summaryLineCompletionItemProvider =
-    new SummaryLineTypeCompletionItemProvider();
+  const hintProvider = new HintProvider();
 
   context.subscriptions.push(
-    summaryLineCompletionItemProvider,
-    vscode.languages.registerCodeActionsProvider(
-      "scminput",
-      summaryLineCompletionItemProvider
-    ),
-    vscode.languages.registerCompletionItemProvider(
-      "scminput",
-      summaryLineCompletionItemProvider
-    )
+    hintProvider,
+    vscode.languages.registerCodeActionsProvider("scminput", hintProvider),
+    vscode.languages.registerCompletionItemProvider("scminput", hintProvider)
   );
   activateExtensionContext(context);
 }
