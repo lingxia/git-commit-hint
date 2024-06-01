@@ -22,6 +22,16 @@ export function fileExistsSync(filePath: string): boolean {
   }
 }
 
+export function createDir(dirPath: string) {
+  try {
+    if (!fs.existsSync(dirPath)) {
+      fs.mkdirSync(dirPath, { recursive: true });
+    }
+  } catch (error) {
+    console.error(`创建目录失败: ${error}`);
+  }
+}
+
 export const readFileContentSync = (filePath: string): string => {
   try {
     const content = fs.readFileSync(filePath, "utf8");
@@ -37,8 +47,7 @@ export const writeFileContentSync = (
   content: string
 ): void => {
   try {
-    fs.writeFileSync(filePath, content, "utf8");
-    vscode.window.showInformationMessage("文件写入成功");
+    fs.writeFileSync(filePath, content, { encoding: "utf8", flag: "w" });
   } catch (error) {
     vscode.window.showErrorMessage(`写入文件失败: ${error}`);
   }

@@ -140,6 +140,10 @@ export class HintProvider
     }
 
     const text = document.lineAt(0).text.toLocaleLowerCase();
+    if (text.includes(SplitStr)) {
+      const prefix = text.split(SplitStr)[0].replace(" ", "");
+      this._saveNewCommitToFile(prefix);
+    }
     console.log(text);
 
     // this._saveNewCommitToFile(`${text}`);
