@@ -6,7 +6,7 @@ import {
   fileExistsSync,
 } from "./fileUtils";
 
-const SplitStr = "#comment ";
+const SplitStr = "#comment";
 let extensionContext: vscode.ExtensionContext | undefined;
 
 export class HintProvider
@@ -22,12 +22,10 @@ export class HintProvider
     this.diagnosticCollection = vscode.languages.createDiagnosticCollection(
       "scm-input-conventional-commit"
     );
-
     this.disposables.push(
       this.diagnosticCollection,
-      vscode.workspace.onDidOpenTextDocument((d) => this._lintSubjectLine(d)),
       vscode.workspace.onDidChangeTextDocument((e) =>
-        this._lintSubjectLine(e.document)
+        this._prefixSave(e.document)
       )
     );
   }
@@ -63,18 +61,16 @@ export class HintProvider
     position: vscode.Position,
     token: vscode.CancellationToken,
     context: vscode.CompletionContext
-  ): vscode.ProviderResult<
-    vscode.CompletionItem[] | vscode.CompletionList<vscode.CompletionItem>
-  > {
+  ): vscode.ProviderResult<vscode.CompletionItem[]> {
     if (position.line === 0) {
-      const allowedPrefixes = this._getAllowedPrefixes();
-      const completions = allowedPrefixes.map((prefix) => {
+      const allowedPrefixes = this._getAllHistoryPrefix();
+      const completions = allowedPrefixes.map((prefix, index) => {
         const completionItem = new vscode.CompletionItem(
-          `${SplitStr}`,
+          `${prefix} ${SplitStr}`,
           vscode.CompletionItemKind.Text
         );
         const startPosition = new vscode.Position(0, 0);
-        completionItem.sortText = prefix;
+        completionItem.sortText = String(index);
         completionItem.insertText = "";
         // if (typeof existingPrefix === "string" && existingPrefix.length > 0) {
         //   // If there's an existing invalid prefix, replace it
@@ -88,7 +84,7 @@ export class HintProvider
         // } else {
         const lineText = document.lineAt(0);
         // Don't use label as filter text so that completions aren't filtered out when the cursor is at the end of the word and we want to insert some other text prior
-        completionItem.filterText = `${lineText.text} ${prefix}`;
+        // completionItem.filterText = `${lineText.text} ${prefix}`;
         // If the cursor is at a word boundary, accepting the completion will also replace the word at the cursor.
         // Make the insertText the word itself so that the word at the cursor is preserved.
         const whitespaceWordRange = document.getWordRangeAtPosition(
@@ -102,7 +98,10 @@ export class HintProvider
           );
         }
         completionItem.additionalTextEdits = [
-          vscode.TextEdit.insert(lineText.range.start, `${prefix}: `),
+          vscode.TextEdit.insert(
+            lineText.range.start,
+            `${prefix} ${SplitStr} `
+          ),
         ];
         // }
         return completionItem;
@@ -122,10 +121,13 @@ export class HintProvider
     } else {
       const fileContent = readFileContentSync(filePathToWrite);
       let splitCtn = fileContent.split(",");
-      splitCtn = [text, ...splitCtn];
+      splitCtn = splitCtn.filter((item) => {
+        return item !== text;
+      });
+
       writeFileContentSync(
         filePathToWrite,
-        (splitCtn || [])
+        [text, ...splitCtn]
           .filter((item, index) => {
             return index < 10;
           })
@@ -134,7 +136,7 @@ export class HintProvider
     }
   }
 
-  private _lintSubjectLine(document: vscode.TextDocument): void {
+  private _prefixSave(document: vscode.TextDocument): void {
     if (document.languageId !== "scminput") {
       return;
     }
@@ -145,36 +147,9 @@ export class HintProvider
       this._saveNewCommitToFile(prefix);
     }
     console.log(text);
-
-    // this._saveNewCommitToFile(`${text}`);
-
-    // if (!this._isValidSubjectLine(document)) {
-    // const allowedPrefixes = this._getAllowedPrefixes();
-    // const range = document.lineAt(0).range;
-    // const diagnostic = new vscode.Diagnostic(
-    //   range,
-    //   vscode.l10n.t(
-    //     `Subject line should start with one of the following types:\n{0}`,
-    //     allowedPrefixes.map((prefix) => `${prefix}:`).join(", ")
-    //   ),
-    //   vscode.DiagnosticSeverity.Warning
-    // );
-    // this.diagnosticCollection.set(document.uri, [diagnostic]);
-    // } else {
-    //   this.diagnosticCollection.clear();
-    // }
   }
 
-  // private _isValidSubjectLine(document: vscode.TextDocument): boolean | string {
-  //   const text = document.lineAt(0).text.toLocaleLowerCase();
-  //   console.log("text==>", text);
-
-  //   const prefix = text.includes(SplitStr) ? text.split(SplitStr)[0] : "";
-  //   const allowedPrefixes = this._getAllowedPrefixes();
-  //   return allowedPrefixes.includes(prefix) ? true : prefix;
-  // }
-
-  private _getAllowedPrefixes(): string[] {
+  private _getAllHistoryPrefix(): string[] {
     const storagePath = getExtensionStoragePath(extensionContext);
     const filePathToWrite = vscode.workspace.asRelativePath(
       vscode.Uri.file(storagePath + "/commitHintHistory")
