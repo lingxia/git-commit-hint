@@ -1,3 +1,4 @@
 {
-  "gitCommitHint.enabled": "enable the extension or not"
+  "gitCommitHint.enabled": "enable the extension or not",
+  "gitCommitHint.prefixExtra": "prefixExtra"
 }
