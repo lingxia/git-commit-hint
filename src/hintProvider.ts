@@ -49,7 +49,7 @@ export class HintProvider
     }
     const suggestWidget = new vscode.CodeAction(
       vscode.l10n.t("选择 commit"),
-      vscode.CodeActionKind.Refactor
+      vscode.CodeActionKind.QuickFix
     );
     suggestWidget.isPreferred = true;
     suggestWidget.command = {

@@ -6,7 +6,7 @@ export const getExtensionStoragePath = (
   if (extensionContext) {
     // 获取当前扩展的存储路径
     const storagePath = extensionContext.globalStorageUri;
-    return storagePath?.path;
+    return storagePath?.fsPath;
   } else {
     console.error("Extension context not available.");
     return "";
