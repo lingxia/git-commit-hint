@@ -34,6 +34,11 @@
           "type": "boolean",
           "default": false,
           "markdownDescription": "%gitCommitHint.enabled%"
+        },
+        "gitCommitHint.prefixExtra": {
+          "type": "string",
+          "default": "#comment",
+          "markdownDescription": "%gitCommitHint.prefixExtra%"
         }
       }
     }

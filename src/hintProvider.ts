@@ -6,7 +6,8 @@ import {
   fileExistsSync,
 } from "./fileUtils";
 
-const SplitStr = "#comment";
+const config = vscode.workspace.getConfiguration("gitCommitHint");
+const SplitStr = config.get("prefixExtra", "#comment");
 let extensionContext: vscode.ExtensionContext | undefined;
 
 export class HintProvider
@@ -73,15 +74,20 @@ export class HintProvider
       const startPosition = new vscode.Position(0, 0);
       completionItem.sortText = String(index);
       completionItem.insertText = "";
-      const lineText = document.getText();
-      const endPosition = new vscode.Position(0, lineText.length);
+      const totalLength = document.getText()?.length;
+      const lineCount = document.lineCount;
+      const endPosition = new vscode.Position(
+        lineCount,
+        totalLength === 0 ? 0 : totalLength - 1
+      );
+      const middlePosition = new vscode.Position(0, prefix.length - 1);
       completionItem.additionalTextEdits = [
         vscode.TextEdit.replace(
-          new vscode.Range(startPosition, endPosition),
+          new vscode.Range(startPosition, middlePosition),
           `${prefix}`
         ),
         vscode.TextEdit.replace(
-          new vscode.Range(startPosition, endPosition),
+          new vscode.Range(middlePosition, endPosition),
           ` ${SplitStr} `
         ),
       ];
