@@ -24,7 +24,7 @@
     "onLanguage:scminput"
   ],
   "repository": {
-    "url": "https://github.com/joyceerhl/vscode-git-fit-commit"
+    "url": "https://github.com/lingxia/git-commit-hint"
   },
   "contributes": {
     "configuration": {
