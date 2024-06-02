@@ -1,7 +1,7 @@
 {
   "name": "git-commit-hint",
   "displayName": "Git Commit Hint",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Git Commit Hint",
   "main": "./out/extension.js",
   "scripts": {
@@ -32,7 +32,7 @@
       "properties": {
         "gitCommitHint.enabled": {
           "type": "boolean",
-          "default": false,
+          "default": true,
           "markdownDescription": "%gitCommitHint.enabled%"
         },
         "gitCommitHint.prefixExtra": {
